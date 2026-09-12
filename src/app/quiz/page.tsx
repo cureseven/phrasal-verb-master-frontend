@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface CardData {
   id: string;
@@ -15,6 +15,10 @@ export default function QuizPage() {
   const [showMeaning, setShowMeaning] = useState<boolean>(false);
   const [alwaysShow, setAlwaysShow] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // 直前の固定モードと固定ワードの値を保持
+  const lastModeRef = useRef<'verb_fixed' | 'particle_fixed' | null>(null);
+  const lastWordRef = useRef<string | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
@@ -38,9 +42,66 @@ export default function QuizPage() {
     }
   };
 
+  // 初回ロード時は完全ランダム
   useEffect(() => {
+    lastModeRef.current = null;
+    lastWordRef.current = null;
     fetchNextCard();
   }, []);
+
+  // Nextボタン押下時のマルコフ鎖ロジック
+  const handleNext = () => {
+    let nextMode = lastModeRef.current;
+    let nextWord = lastWordRef.current;
+
+    // 履歴が存在する場合、70%の確率で「前回と同じ固定ルール（軸とワード）」を維持する
+    if (nextMode !== null && nextWord !== null) {
+      const rand = Math.random();
+      if (rand >= 0.7) {
+        // 残り30%の確率で、軸を入れ替えるか完全ランダムにする
+        if (Math.random() < 0.5 && card) {
+          // 軸を反転させる（例: verb_fixed だったら particle_fixed にして現在の particle を固定）
+          nextMode = nextMode === 'verb_fixed' ? 'particle_fixed' : 'verb_fixed';
+          nextWord = nextMode === 'verb_fixed' ? card.verb : card.particle;
+        } else {
+          // 完全ランダムへ
+          nextMode = null;
+          nextWord = null;
+        }
+      }
+    }
+
+    lastModeRef.current = nextMode;
+    lastWordRef.current = nextWord;
+    fetchNextCard(nextMode ?? undefined, nextWord ?? undefined);
+  };
+
+  // カードタップ時のハンドラー（こちらは今まで通り機能している部分）
+  const handleCardClick = (clickedType: 'verb' | 'particle') => {
+    if (!card) return;
+
+    // VERBをクリック ＝ verbを変えたい ＝ particle を固定したい（particle_fixed）
+    // PARTICLEをクリック ＝ particleを変えたい ＝ verb を固定したい（verb_fixed）
+    const defaultMode: 'verb_fixed' | 'particle_fixed' =
+      clickedType === 'verb' ? 'particle_fixed' : 'verb_fixed';
+
+    let nextMode = defaultMode;
+    const currentMode = lastModeRef.current;
+
+    // マルコフ鎖：70%の確率で直前のモードを維持する
+    if (currentMode !== null) {
+      const rand = Math.random();
+      if (rand < 0.7) {
+        nextMode = currentMode;
+      }
+    }
+
+    const nextWord = nextMode === 'verb_fixed' ? card.verb : card.particle;
+
+    lastModeRef.current = nextMode;
+    lastWordRef.current = nextWord;
+    fetchNextCard(nextMode, nextWord);
+  };
 
   const handleAlwaysShowChange = (checked: boolean) => {
     setAlwaysShow(checked);
@@ -63,8 +124,9 @@ export default function QuizPage() {
 
       <div className="flex flex-col items-center w-full max-w-md gap-6">
         <div className="flex gap-4 w-full">
+          {/* VERBカード */}
           <button
-            onClick={() => card && fetchNextCard('particle_fixed', card.particle)}
+            onClick={() => handleCardClick('verb')}
             className="flex-1 bg-white border-2 border-indigo-500 rounded-2xl p-6 shadow-md hover:bg-indigo-50 transition text-center cursor-pointer group"
           >
             <span className="text-xs text-indigo-500 block mb-1 font-semibold">VERB</span>
@@ -73,8 +135,9 @@ export default function QuizPage() {
             </span>
           </button>
 
+          {/* PARTICLEカード */}
           <button
-            onClick={() => card && fetchNextCard('verb_fixed', card.verb)}
+            onClick={() => handleCardClick('particle')}
             className="flex-1 bg-white border-2 border-emerald-500 rounded-2xl p-6 shadow-md hover:bg-emerald-50 transition text-center cursor-pointer group"
           >
             <span className="text-xs text-emerald-500 block mb-1 font-semibold">PARTICLE</span>
@@ -100,7 +163,6 @@ export default function QuizPage() {
           )}
         </div>
 
-        {/* 訳ボックスの下に配置したAlways ShowトグルとNextボタン */}
         <div className="w-full flex flex-col gap-4">
           <label className="flex items-center justify-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
             <input
@@ -113,7 +175,7 @@ export default function QuizPage() {
           </label>
 
           <button
-            onClick={() => fetchNextCard()}
+            onClick={handleNext}
             className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-700 transition"
           >
             Next
