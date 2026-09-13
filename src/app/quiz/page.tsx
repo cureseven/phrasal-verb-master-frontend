@@ -46,7 +46,9 @@ export default function QuizPage() {
   useEffect(() => {
     lastModeRef.current = null;
     lastWordRef.current = null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- マウント時の初回フェッチ
     fetchNextCard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Nextボタン押下時のマルコフ鎖ロジック
@@ -156,7 +158,7 @@ export default function QuizPage() {
           {isDisplayed ? (
             <div className="space-y-2">
               <p className="text-lg font-semibold text-gray-800">{card?.meaningJa}</p>
-              <p className="text-sm text-gray-500 italic">"{card?.exampleSentence}"</p>
+              <p className="text-sm text-gray-500 italic">&quot;{card?.exampleSentence}&quot;</p>
             </div>
           ) : (
             <p className="text-sm text-gray-400">Click to reveal meaning & example</p>
