@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CardData {
   id: string;
@@ -11,16 +14,17 @@ interface CardData {
 }
 
 export default function QuizPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [card, setCard] = useState<CardData | null>(null);
   const [showMeaning, setShowMeaning] = useState<boolean>(false);
   const [alwaysShow, setAlwaysShow] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [marking, setMarking] = useState<boolean>(false);
 
   // 直前の固定モードと固定ワードの値を保持
   const lastModeRef = useRef<'verb_fixed' | 'particle_fixed' | null>(null);
   const lastWordRef = useRef<string | null>(null);
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
   const fetchNextCard = async (mode?: string, word?: string) => {
     setLoading(true);
@@ -28,12 +32,11 @@ export default function QuizPage() {
       setShowMeaning(false);
     }
     try {
-      let url = `${API_BASE}/api/quiz/next`;
+      let url = '/api/quiz/next';
       if (mode && word) {
         url += `?mode=${mode}&word=${encodeURIComponent(word)}`;
       }
-      const res = await fetch(url);
-      const data = await res.json();
+      const data = await apiFetch<CardData>(url);
       setCard(data);
     } catch (err) {
       console.error('Failed to fetch card:', err);
@@ -42,14 +45,38 @@ export default function QuizPage() {
     }
   };
 
+  // 未ログインならログイン画面へ誘導（SCR-03は要ログイン）
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [authLoading, user, router]);
+
   // 初回ロード時は完全ランダム
   useEffect(() => {
+    if (!user) return;
     lastModeRef.current = null;
     lastWordRef.current = null;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- マウント時の初回フェッチ
     fetchNextCard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
+
+  const handleMark = async (status: 'memorized' | 'review_needed') => {
+    if (!card || marking) return;
+    setMarking(true);
+    try {
+      await apiFetch('/api/progress/mark', {
+        method: 'POST',
+        body: JSON.stringify({ phrasalVerbId: card.id, status }),
+      });
+      handleNext();
+    } catch (err) {
+      console.error('Failed to mark progress:', err);
+    } finally {
+      setMarking(false);
+    }
+  };
 
   // Nextボタン押下時のマルコフ鎖ロジック
   const handleNext = () => {
@@ -112,7 +139,7 @@ export default function QuizPage() {
     }
   };
 
-  if (loading && !card) {
+  if (authLoading || !user || (loading && !card)) {
     return <div className="flex h-screen items-center justify-center text-gray-500">Loading...</div>;
   }
 
@@ -175,6 +202,23 @@ export default function QuizPage() {
             />
             Always show meaning
           </label>
+
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => handleMark('review_needed')}
+              disabled={marking}
+              className="flex-1 py-3 bg-white border-2 border-red-400 text-red-600 font-semibold rounded-xl shadow-sm hover:bg-red-50 transition disabled:opacity-50"
+            >
+              覚えてない
+            </button>
+            <button
+              onClick={() => handleMark('memorized')}
+              disabled={marking}
+              className="flex-1 py-3 bg-white border-2 border-emerald-500 text-emerald-600 font-semibold rounded-xl shadow-sm hover:bg-emerald-50 transition disabled:opacity-50"
+            >
+              覚えた
+            </button>
+          </div>
 
           <button
             onClick={handleNext}
