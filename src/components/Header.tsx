@@ -16,9 +16,17 @@ export function Header() {
 
   return (
     <header className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
-      <Link href="/" className="font-bold text-gray-900">
-        Phrasal Verb Master
-      </Link>
+      <div className="flex items-center gap-6">
+        <Link href="/" className="font-bold text-gray-900">
+          Phrasal Verb Master
+        </Link>
+        <Link href="/list" className="text-sm text-gray-600 hover:underline">
+          一覧
+        </Link>
+        <Link href="/quiz" className="text-sm text-gray-600 hover:underline">
+          クイズ
+        </Link>
+      </div>
 
       <nav className="flex items-center gap-4 text-sm">
         {loading ? null : user ? (
