@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { AuthUser } from '@/types/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,8 +29,8 @@ export default function SignupPage() {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
+      await refresh();
       router.push('/quiz');
-      router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'サインアップに失敗しました。');
     } finally {
