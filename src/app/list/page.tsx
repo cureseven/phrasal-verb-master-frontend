@@ -17,6 +17,15 @@ export default function ListPage() {
   const [selectedParticle, setSelectedParticle] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>('');
 
+  // マイページなどからの ?status=review_needed 等のディープリンクに対応
+  useEffect(() => {
+    const initial = new URLSearchParams(window.location.search).get('status');
+    if (initial === 'memorized' || initial === 'review_needed') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- window.locationはSSR時に読めないため初回マウント時に同期する
+      setSelectedStatus(initial);
+    }
+  }, []);
+
   // ドロップダウンの選択肢を作るための全件取得（ステータス絞り込みには影響されない）
   useEffect(() => {
     const load = async () => {
