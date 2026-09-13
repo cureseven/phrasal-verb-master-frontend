@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Logo } from '@/components/Logo';
 
 export function Header() {
   const { user, loading, logout } = useAuth();
@@ -17,7 +18,8 @@ export function Header() {
   return (
     <header className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
       <div className="flex items-center gap-6">
-        <Link href="/" className="font-bold text-gray-900">
+        <Link href="/" className="flex items-center gap-2 font-bold text-gray-900">
+          <Logo size={28} />
           Phrasal Verb Master
         </Link>
         <Link href="/list" className="text-sm text-gray-600 hover:underline">
