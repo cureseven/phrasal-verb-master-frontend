@@ -3,19 +3,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { PhrasalVerb } from '@/types/phrasalVerb';
+import { useAuth } from '@/contexts/AuthContext';
+
+type StatusFilter = '' | 'memorized' | 'review_needed';
 
 export default function ListPage() {
-  const [verbs, setVerbs] = useState<PhrasalVerb[]>([]);
+  const { user } = useAuth();
+  const [allVerbs, setAllVerbs] = useState<PhrasalVerb[]>([]);
+  const [statusFilteredVerbs, setStatusFilteredVerbs] = useState<PhrasalVerb[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVerb, setSelectedVerb] = useState('');
   const [selectedParticle, setSelectedParticle] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<StatusFilter>('');
 
+  // ドロップダウンの選択肢を作るための全件取得（ステータス絞り込みには影響されない）
   useEffect(() => {
     const load = async () => {
       try {
         const data = await apiFetch<PhrasalVerb[]>('/api/verbs');
-        setVerbs(data);
+        setAllVerbs(data);
       } catch {
         setError('句動詞一覧の取得に失敗しました。');
       } finally {
@@ -25,23 +32,43 @@ export default function ListPage() {
     load();
   }, []);
 
+  // 学習ステータスはユーザーごとのデータのためサーバー側で絞り込む
+  useEffect(() => {
+    if (!selectedStatus || !user) {
+      return;
+    }
+    const load = async () => {
+      try {
+        const data = await apiFetch<PhrasalVerb[]>(
+          `/api/verbs?status=${encodeURIComponent(selectedStatus)}`
+        );
+        setStatusFilteredVerbs(data);
+      } catch {
+        setError('句動詞一覧の取得に失敗しました。');
+      }
+    };
+    load();
+  }, [selectedStatus, user]);
+
   const verbOptions = useMemo(
-    () => Array.from(new Set(verbs.map((v) => v.verb))).sort(),
-    [verbs]
+    () => Array.from(new Set(allVerbs.map((v) => v.verb))).sort(),
+    [allVerbs]
   );
   const particleOptions = useMemo(
-    () => Array.from(new Set(verbs.map((v) => v.particle))).sort(),
-    [verbs]
+    () => Array.from(new Set(allVerbs.map((v) => v.particle))).sort(),
+    [allVerbs]
   );
+
+  const baseVerbs = selectedStatus && user && statusFilteredVerbs ? statusFilteredVerbs : allVerbs;
 
   const filteredVerbs = useMemo(
     () =>
-      verbs.filter(
+      baseVerbs.filter(
         (v) =>
           (!selectedVerb || v.verb === selectedVerb) &&
           (!selectedParticle || v.particle === selectedParticle)
       ),
-    [verbs, selectedVerb, selectedParticle]
+    [baseVerbs, selectedVerb, selectedParticle]
   );
 
   return (
@@ -75,6 +102,18 @@ export default function ListPage() {
               </option>
             ))}
           </select>
+
+          {user && (
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as StatusFilter)}
+              className="rounded-lg border border-gray-300 px-3 py-2 bg-white text-sm"
+            >
+              <option value="">学習状況: すべて</option>
+              <option value="memorized">覚えた</option>
+              <option value="review_needed">覚えてない</option>
+            </select>
+          )}
         </div>
 
         {loading && <p className="text-gray-500">読み込み中...</p>}
