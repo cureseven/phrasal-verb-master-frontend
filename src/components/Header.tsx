@@ -31,6 +31,9 @@ export function Header() {
       <nav className="flex items-center gap-4 text-sm">
         {loading ? null : user ? (
           <>
+            <Link href="/mypage" className="text-gray-600 hover:underline">
+              マイページ
+            </Link>
             <span className="text-gray-600">{user.email}</span>
             <button
               onClick={handleLogout}
