@@ -3,6 +3,7 @@ import Link from 'next/link';
 export default function HomePage() {
   const pages = [
     { path: '/quiz', label: 'Quiz Page' },
+    { path: '/list', label: 'List Page' },
     // 他に作成したページがあればここに追加
   ];
 
