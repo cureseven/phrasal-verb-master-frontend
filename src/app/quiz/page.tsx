@@ -105,26 +105,15 @@ export default function QuizPage() {
     fetchNextCard(nextMode ?? undefined, nextWord ?? undefined);
   };
 
-  // カードタップ時のハンドラー（こちらは今まで通り機能している部分）
+  // カードタップ時のハンドラー：クリックした単語を変え、もう一方は固定する（マルコフ鎖の
+  // 継続性はNextボタン専用のロジックなので、明示的なクリックには適用しない）
   const handleCardClick = (clickedType: 'verb' | 'particle') => {
     if (!card) return;
 
     // VERBをクリック ＝ verbを変えたい ＝ particle を固定したい（particle_fixed）
     // PARTICLEをクリック ＝ particleを変えたい ＝ verb を固定したい（verb_fixed）
-    const defaultMode: 'verb_fixed' | 'particle_fixed' =
+    const nextMode: 'verb_fixed' | 'particle_fixed' =
       clickedType === 'verb' ? 'particle_fixed' : 'verb_fixed';
-
-    let nextMode = defaultMode;
-    const currentMode = lastModeRef.current;
-
-    // マルコフ鎖：70%の確率で直前のモードを維持する
-    if (currentMode !== null) {
-      const rand = Math.random();
-      if (rand < 0.7) {
-        nextMode = currentMode;
-      }
-    }
-
     const nextWord = nextMode === 'verb_fixed' ? card.verb : card.particle;
 
     lastModeRef.current = nextMode;
