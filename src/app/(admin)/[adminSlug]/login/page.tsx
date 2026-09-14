@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminUser } from '@/types/admin';
+import { Logo } from '@/components/Logo';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -36,7 +37,10 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-xl font-bold text-gray-900 mb-6 text-center">管理者ログイン</h1>
+        <h1 className="flex items-center justify-center gap-2 text-xl font-bold text-gray-900 mb-6">
+          <Logo size={24} />
+          管理者ログイン
+        </h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm text-gray-700">

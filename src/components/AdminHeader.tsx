@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { Logo } from '@/components/Logo';
 
 export function AdminHeader({ title, showBackLink }: { title: string; showBackLink?: boolean }) {
   const router = useRouter();
@@ -22,6 +23,7 @@ export function AdminHeader({ title, showBackLink }: { title: string; showBackLi
             ←
           </Link>
         )}
+        <Logo size={24} />
         <h1 className="text-xl font-bold text-gray-900">{title}</h1>
       </div>
       <div className="flex items-center gap-4 text-sm">

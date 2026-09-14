@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
       <div className="w-full max-w-4xl">
-        <AdminHeader title="管理ダッシュボード" />
+        <AdminHeader title="Phrasal Verb Master 管理ダッシュボード" />
 
         {error && <p className="text-red-600 mb-4">{error}</p>}
         {loading && <p className="text-gray-500">読み込み中...</p>}
