@@ -53,27 +53,29 @@ export default function AdminNewVerbPage() {
           onSubmit={handleSubmit}
           className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col gap-4"
         >
-          <label className="flex flex-col gap-1 text-sm text-gray-700">
-            動詞
-            <input
-              type="text"
-              required
-              value={verb}
-              onChange={(e) => setVerb(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-            />
-          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <label className="flex flex-col gap-1 text-sm text-gray-700">
+              動詞
+              <input
+                type="text"
+                required
+                value={verb}
+                onChange={(e) => setVerb(e.target.value)}
+                className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
+              />
+            </label>
 
-          <label className="flex flex-col gap-1 text-sm text-gray-700">
-            副詞/前置詞
-            <input
-              type="text"
-              required
-              value={particle}
-              onChange={(e) => setParticle(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-            />
-          </label>
+            <label className="flex flex-col gap-1 text-sm text-gray-700">
+              副詞/前置詞
+              <input
+                type="text"
+                required
+                value={particle}
+                onChange={(e) => setParticle(e.target.value)}
+                className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
+              />
+            </label>
+          </div>
 
           <label className="flex flex-col gap-1 text-sm text-gray-700">
             意味（日本語）

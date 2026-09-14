@@ -71,7 +71,11 @@ export default function AdminVerbsPage() {
             </thead>
             <tbody>
               {verbs.map((v) => (
-                <tr key={v.id} className="border-b border-gray-100 last:border-0">
+                <tr
+                  key={v.id}
+                  onClick={() => router.push(`/${adminSlug}/verbs/${v.id}`)}
+                  className="border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50"
+                >
                   <td className="p-3 font-semibold text-indigo-600">{v.verb}</td>
                   <td className="p-3 font-semibold text-emerald-600">{v.particle}</td>
                   <td className="p-3">{v.meaningJa}</td>
