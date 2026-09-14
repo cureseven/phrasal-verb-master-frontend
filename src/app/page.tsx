@@ -26,13 +26,15 @@ export default function HomePage() {
     loadRandom();
   }, []);
 
-  const handleWordClick = async (type: RelatedType) => {
+  const handleWordClick = async (clickedType: RelatedType) => {
     if (!card) return;
-    const value = type === 'verb' ? card.verb : card.particle;
+    // クリックした方を変えたいので、逆側（変えたくない方）を固定条件として問い合わせる
+    const fixedType: RelatedType = clickedType === 'verb' ? 'particle' : 'verb';
+    const fixedValue = fixedType === 'verb' ? card.verb : card.particle;
 
     try {
       const related = await apiFetch<PhrasalVerb[]>(
-        `/api/verbs/related?type=${type}&value=${encodeURIComponent(value)}`
+        `/api/verbs/related?type=${fixedType}&value=${encodeURIComponent(fixedValue)}`
       );
       const candidates = related.filter((v) => v.id !== card.id);
       if (candidates.length === 0) return;
