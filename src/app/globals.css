@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  /* サイト内の各ページが使うbg-gray-50と統一し、bodyの地色が透けても違う色に見えないようにする */
+  --background: #f9fafb;
   --foreground: #171717;
 }
 
