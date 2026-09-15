@@ -1,55 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/api';
-import { PhrasalVerb } from '@/types/phrasalVerb';
-
-type RelatedType = 'verb' | 'particle';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { FlashcardDemo } from '@/components/FlashcardDemo';
 
 export default function HomePage() {
-  const [card, setCard] = useState<PhrasalVerb | null>(null);
-  const [showMeaning, setShowMeaning] = useState(false);
-  const [alwaysShow, setAlwaysShow] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    const loadRandom = async () => {
-      try {
-        const data = await apiFetch<PhrasalVerb>('/api/quiz/next');
-        setCard(data);
-      } catch {
-        setError('句動詞の取得に失敗しました。');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadRandom();
-  }, []);
-
-  const handleWordClick = async (clickedType: RelatedType) => {
-    if (!card) return;
-    // クリックした方を変えたいので、逆側（変えたくない方）を固定条件として問い合わせる
-    const fixedType: RelatedType = clickedType === 'verb' ? 'particle' : 'verb';
-    const fixedValue = fixedType === 'verb' ? card.verb : card.particle;
-
-    try {
-      const related = await apiFetch<PhrasalVerb[]>(
-        `/api/verbs/related?type=${fixedType}&value=${encodeURIComponent(fixedValue)}`
-      );
-      const candidates = related.filter((v) => v.id !== card.id);
-      if (candidates.length === 0) return;
-      const next = candidates[Math.floor(Math.random() * candidates.length)];
-      setCard(next);
-      if (!alwaysShow) {
-        setShowMeaning(false);
-      }
-    } catch {
-      setError('句動詞の切り替えに失敗しました。');
-    }
-  };
-
-  if (loading) {
+  if (authLoading) {
     return (
       <main className="flex min-h-[60vh] items-center justify-center text-gray-500">
         読み込み中...
@@ -57,74 +15,80 @@ export default function HomePage() {
     );
   }
 
-  if (error || !card) {
+  if (user) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center text-red-600">
-        {error || '句動詞が見つかりません。'}
+      <main className="flex min-h-[80vh] flex-col items-center justify-center p-8 bg-gray-50">
+        <FlashcardDemo />
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-[80vh] flex-col items-center justify-center p-8 bg-gray-50">
-      <div className="flex flex-col items-center w-full max-w-md gap-6">
-        <div className="flex gap-4 w-full">
-          <button
-            onClick={() => handleWordClick('verb')}
-            className="flex-1 bg-white border-2 border-indigo-500 rounded-2xl p-6 shadow-md hover:bg-indigo-50 transition text-center cursor-pointer group"
-          >
-            <span className="text-xs text-indigo-500 block mb-1 font-semibold">VERB</span>
-            <span className="text-2xl font-bold text-gray-900 group-hover:text-indigo-600">
-              {card.verb}
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleWordClick('particle')}
-            className="flex-1 bg-white border-2 border-emerald-500 rounded-2xl p-6 shadow-md hover:bg-emerald-50 transition text-center cursor-pointer group"
-          >
-            <span className="text-xs text-emerald-500 block mb-1 font-semibold">PARTICLE</span>
-            <span className="text-2xl font-bold text-gray-900 group-hover:text-emerald-600">
-              {card.particle}
-            </span>
-          </button>
-        </div>
-
-        <div
-          onClick={() => !alwaysShow && setShowMeaning(!showMeaning)}
-          className={`w-full bg-white rounded-2xl p-6 shadow-sm border border-gray-200 min-h-[120px] flex flex-col justify-center items-center text-center transition ${
-            !alwaysShow ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'
-          }`}
-        >
-          {showMeaning || alwaysShow ? (
-            <div className="space-y-2">
-              <p className="text-lg font-semibold text-gray-800">{card.meaningJa}</p>
-              <p className="text-sm text-gray-500 italic">&quot;{card.exampleSentence}&quot;</p>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-400">クリックして日本語訳を表示</p>
-          )}
-        </div>
-
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={alwaysShow}
-            onChange={(e) => {
-              setAlwaysShow(e.target.checked);
-              if (e.target.checked) {
-                setShowMeaning(true);
-              }
-            }}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
-          />
-          常に日本語訳を表示する
-        </label>
-
-        <p className="text-xs text-gray-400">
-          単語をクリックすると別の句動詞に切り替わります
+    <main className="bg-gray-50">
+      {/* ヒーロー */}
+      <section className="flex flex-col items-center text-center px-8 py-20 bg-white border-b border-gray-100">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">句動詞を、体で覚える。</h1>
+        <p className="text-gray-600 max-w-xl mb-8">
+          take off、turn on、give up...動詞と前置詞の組み合わせをカードをめくる感覚で
+          直感的に学べる、句動詞学習アプリ。会員登録なしでも今すぐ試せます。
         </p>
-      </div>
+        <div className="flex gap-4">
+          <Link
+            href="/signup"
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow hover:bg-indigo-700 transition"
+          >
+            無料で新規登録
+          </Link>
+          <Link
+            href="/login"
+            className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+          >
+            ログイン
+          </Link>
+        </div>
+      </section>
+
+      {/* 機能紹介 */}
+      <section className="max-w-4xl mx-auto px-8 py-16 grid gap-10 sm:grid-cols-3">
+        <FeatureCard
+          title="クリックで切り替え"
+          desc="動詞や前置詞をクリックすると、ペアになる別の句動詞に瞬時に切り替わります。"
+        />
+        <FeatureCard
+          title="一覧・絞り込み"
+          desc="収録された句動詞を動詞・前置詞で絞り込んで一覧できます（要ログイン）。"
+        />
+        <FeatureCard
+          title="クイズで定着"
+          desc="「覚えた／覚えてない」を記録しながらクイズ形式で復習し、進捗をマイページで確認できます。"
+        />
+      </section>
+
+      {/* 体験デモ */}
+      <section className="bg-white border-y border-gray-100 py-16 px-8">
+        <h2 className="text-center text-xl font-bold text-gray-900 mb-8">実際に触ってみる</h2>
+        <FlashcardDemo />
+      </section>
+
+      {/* 最終CTA */}
+      <section className="flex flex-col items-center text-center px-8 py-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">今すぐ始めよう</h2>
+        <Link
+          href="/signup"
+          className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow hover:bg-indigo-700 transition"
+        >
+          無料で新規登録する
+        </Link>
+      </section>
     </main>
+  );
+}
+
+function FeatureCard({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="text-center">
+      <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
+      <p className="text-sm text-gray-600">{desc}</p>
+    </div>
   );
 }

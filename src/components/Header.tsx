@@ -22,12 +22,16 @@ export function Header() {
           <Logo size={28} />
           Phrasal Verb Master
         </Link>
-        <Link href="/list" className="text-sm text-gray-600 hover:underline">
-          一覧
-        </Link>
-        <Link href="/quiz" className="text-sm text-gray-600 hover:underline">
-          クイズ
-        </Link>
+        {user && (
+          <>
+            <Link href="/list" className="text-sm text-gray-600 hover:underline">
+              一覧
+            </Link>
+            <Link href="/quiz" className="text-sm text-gray-600 hover:underline">
+              クイズ
+            </Link>
+          </>
+        )}
       </div>
 
       <nav className="flex items-center gap-4 text-sm">
