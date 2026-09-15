@@ -30,7 +30,7 @@ export default function SignupPage() {
         body: JSON.stringify({ email, password }),
       });
       await refresh();
-      router.push('/quiz');
+      router.push('/');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'サインアップに失敗しました。');
     } finally {
