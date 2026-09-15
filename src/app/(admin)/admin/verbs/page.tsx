@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
@@ -10,7 +10,6 @@ import { PhrasalVerb } from '@/types/phrasalVerb';
 
 export default function AdminVerbsPage() {
   const router = useRouter();
-  const { adminSlug } = useParams<{ adminSlug: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
   const [verbs, setVerbs] = useState<PhrasalVerb[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,9 +17,9 @@ export default function AdminVerbsPage() {
 
   useEffect(() => {
     if (!authLoading && !admin) {
-      router.push(`/${adminSlug}/login`);
+      router.push('/login');
     }
-  }, [authLoading, admin, adminSlug, router]);
+  }, [authLoading, admin, router]);
 
   useEffect(() => {
     if (!admin) return;
@@ -49,7 +48,7 @@ export default function AdminVerbsPage() {
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm text-gray-500">全{verbs.length}件</p>
           <Link
-            href={`/${adminSlug}/verbs/new`}
+            href="/verbs/new"
             className="text-sm px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
           >
             句動詞を登録する
@@ -73,7 +72,7 @@ export default function AdminVerbsPage() {
               {verbs.map((v) => (
                 <tr
                   key={v.id}
-                  onClick={() => router.push(`/${adminSlug}/verbs/${v.id}`)}
+                  onClick={() => router.push(`/verbs/${v.id}`)}
                   className="border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50"
                 >
                   <td className="p-3 font-semibold text-indigo-600">{v.verb}</td>

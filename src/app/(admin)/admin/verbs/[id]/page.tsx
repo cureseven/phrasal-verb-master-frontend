@@ -9,7 +9,7 @@ import { PhrasalVerb } from '@/types/phrasalVerb';
 
 export default function AdminVerbDetailPage() {
   const router = useRouter();
-  const { adminSlug, id } = useParams<{ adminSlug: string; id: string }>();
+  const { id } = useParams<{ id: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
   const [verb, setVerb] = useState<PhrasalVerb | null>(null);
   const [meaningJa, setMeaningJa] = useState('');
@@ -21,9 +21,9 @@ export default function AdminVerbDetailPage() {
 
   useEffect(() => {
     if (!authLoading && !admin) {
-      router.push(`/${adminSlug}/login`);
+      router.push('/login');
     }
-  }, [authLoading, admin, adminSlug, router]);
+  }, [authLoading, admin, router]);
 
   useEffect(() => {
     if (!admin) return;
@@ -51,7 +51,7 @@ export default function AdminVerbDetailPage() {
         method: 'PATCH',
         body: JSON.stringify({ meaningJa, exampleSentence }),
       });
-      router.push(`/${adminSlug}/verbs`);
+      router.push('/verbs');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '更新に失敗しました。');
     } finally {
@@ -67,7 +67,7 @@ export default function AdminVerbDetailPage() {
     setDeleting(true);
     try {
       await apiFetch(`/api/admin/verbs/${id}`, { method: 'DELETE' });
-      router.push(`/${adminSlug}/verbs`);
+      router.push('/verbs');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '削除に失敗しました。');
       setDeleting(false);

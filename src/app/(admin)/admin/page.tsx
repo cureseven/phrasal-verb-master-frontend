@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
@@ -10,7 +10,6 @@ import { AdminStats } from '@/types/admin';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { adminSlug } = useParams<{ adminSlug: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,9 +17,9 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!authLoading && !admin) {
-      router.push(`/${adminSlug}/login`);
+      router.push('/login');
     }
-  }, [authLoading, admin, adminSlug, router]);
+  }, [authLoading, admin, router]);
 
   useEffect(() => {
     if (!admin) return;
@@ -51,12 +50,8 @@ export default function AdminDashboardPage() {
 
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard label="ユーザー数" value={stats.totalUsers} href={`/${adminSlug}/users`} />
-            <StatCard
-              label="句動詞数"
-              value={stats.totalPhrasalVerbs}
-              href={`/${adminSlug}/verbs`}
-            />
+            <StatCard label="ユーザー数" value={stats.totalUsers} href="/users" />
+            <StatCard label="句動詞数" value={stats.totalPhrasalVerbs} href="/verbs" />
             <StatCard label="覚えた合計" value={stats.totalMemorized} accent="text-emerald-600" />
             <StatCard label="覚えてない合計" value={stats.totalReviewNeeded} accent="text-red-500" />
           </div>

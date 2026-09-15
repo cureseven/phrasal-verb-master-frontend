@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
@@ -9,7 +9,6 @@ import { AdminUserRow } from '@/types/admin';
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const { adminSlug } = useParams<{ adminSlug: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,9 +17,9 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (!authLoading && !admin) {
-      router.push(`/${adminSlug}/login`);
+      router.push('/login');
     }
-  }, [authLoading, admin, adminSlug, router]);
+  }, [authLoading, admin, router]);
 
   const loadUsers = useCallback(async () => {
     try {
