@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
@@ -9,7 +9,6 @@ import { Logo } from '@/components/Logo';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { adminSlug } = useParams<{ adminSlug: string }>();
   const { refresh } = useAdminAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +25,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ email, password }),
       });
       await refresh();
-      router.push(`/${adminSlug}`);
+      router.push('/');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'ログインに失敗しました。');
     } finally {

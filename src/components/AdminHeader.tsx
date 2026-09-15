@@ -1,25 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Logo } from '@/components/Logo';
 
 export function AdminHeader({ title, showBackLink }: { title: string; showBackLink?: boolean }) {
   const router = useRouter();
-  const { adminSlug } = useParams<{ adminSlug: string }>();
   const { admin, logout } = useAdminAuth();
 
   const handleLogout = async () => {
     await logout();
-    router.push(`/${adminSlug}/login`);
+    router.push('/login');
   };
 
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-3">
         {showBackLink && (
-          <Link href={`/${adminSlug}`} className="text-gray-400 hover:text-gray-600">
+          <Link href="/" className="text-gray-400 hover:text-gray-600">
             ←
           </Link>
         )}

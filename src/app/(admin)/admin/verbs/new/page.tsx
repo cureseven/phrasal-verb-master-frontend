@@ -1,14 +1,13 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
 
 export default function AdminNewVerbPage() {
   const router = useRouter();
-  const { adminSlug } = useParams<{ adminSlug: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
   const [verb, setVerb] = useState('');
   const [particle, setParticle] = useState('');
@@ -19,9 +18,9 @@ export default function AdminNewVerbPage() {
 
   useEffect(() => {
     if (!authLoading && !admin) {
-      router.push(`/${adminSlug}/login`);
+      router.push('/login');
     }
-  }, [authLoading, admin, adminSlug, router]);
+  }, [authLoading, admin, router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -32,7 +31,7 @@ export default function AdminNewVerbPage() {
         method: 'POST',
         body: JSON.stringify({ verb, particle, meaningJa, exampleSentence }),
       });
-      router.push(`/${adminSlug}/verbs`);
+      router.push('/verbs');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '登録に失敗しました。');
     } finally {
