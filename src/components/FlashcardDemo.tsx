@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, ApiError } from '@/lib/api';
 import { PhrasalVerb } from '@/types/phrasalVerb';
 
 type RelatedType = 'verb' | 'particle';
@@ -18,8 +18,8 @@ export function FlashcardDemo() {
       try {
         const data = await apiFetch<PhrasalVerb>('/api/quiz/next');
         setCard(data);
-      } catch {
-        setError('句動詞の取得に失敗しました。');
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : '句動詞の取得に失敗しました。');
       } finally {
         setLoading(false);
       }
@@ -44,8 +44,8 @@ export function FlashcardDemo() {
       if (!alwaysShow) {
         setShowMeaning(false);
       }
-    } catch {
-      setError('句動詞の切り替えに失敗しました。');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '句動詞の切り替えに失敗しました。');
     }
   };
 
