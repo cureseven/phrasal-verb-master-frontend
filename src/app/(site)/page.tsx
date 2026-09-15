@@ -25,54 +25,13 @@ export default function HomePage() {
 
   return (
     <main className="bg-gray-50">
-      {/* ヒーロー */}
-      <section className="flex flex-col items-center text-center px-8 py-20 bg-white border-b border-gray-100">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">句動詞を、体で覚える。</h1>
-        <p className="text-gray-600 max-w-xl mb-8">
-          take off、turn on、give up...動詞と前置詞の組み合わせをカードをめくる感覚で
-          直感的に学べる、句動詞学習アプリ。会員登録なしでも今すぐ試せます。
-        </p>
-        <div className="flex gap-4">
-          <Link
-            href="/signup"
-            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow hover:bg-indigo-700 transition"
-          >
-            無料で新規登録
-          </Link>
-          <Link
-            href="/login"
-            className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
-          >
-            ログイン
-          </Link>
-        </div>
-      </section>
-
-      {/* 機能紹介 */}
-      <section className="max-w-4xl mx-auto px-8 py-16 grid gap-10 sm:grid-cols-3">
-        <FeatureCard
-          title="クリックで切り替え"
-          desc="動詞や前置詞をクリックすると、ペアになる別の句動詞に瞬時に切り替わります。"
-        />
-        <FeatureCard
-          title="一覧・絞り込み"
-          desc="収録された句動詞を動詞・前置詞で絞り込んで一覧できます（要ログイン）。"
-        />
-        <FeatureCard
-          title="クイズで定着"
-          desc="「覚えた／覚えてない」を記録しながらクイズ形式で復習し、進捗をマイページで確認できます。"
-        />
-      </section>
-
       {/* 体験デモ */}
-      <section className="bg-white border-y border-gray-100 py-16 px-8">
-        <h2 className="text-center text-xl font-bold text-gray-900 mb-8">実際に触ってみる</h2>
+      <section className="pt-12 pb-16 px-8">
         <FlashcardDemo />
       </section>
 
-      {/* 最終CTA */}
-      <section className="flex flex-col items-center text-center px-8 py-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">今すぐ始めよう</h2>
+      {/* 新規登録CTA */}
+      <section className="flex flex-col items-center text-center px-8 pb-16">
         <Link
           href="/signup"
           className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow hover:bg-indigo-700 transition"
@@ -80,15 +39,31 @@ export default function HomePage() {
           無料で新規登録する
         </Link>
       </section>
-    </main>
-  );
-}
 
-function FeatureCard({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="text-center">
-      <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-sm text-gray-600">{desc}</p>
-    </div>
+      {/* 会員登録の効果 */}
+      <section className="max-w-2xl mx-auto px-8 pb-20">
+        <h2 className="text-center text-xl font-bold text-gray-900 mb-6">
+          会員登録するとできること
+        </h2>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="p-4 font-semibold text-gray-900 w-1/3">収録語彙をすべて確認</td>
+                <td className="p-4 text-gray-600">
+                  一覧画面で収録されている句動詞を動詞・前置詞で絞り込んで閲覧できます。
+                </td>
+              </tr>
+              <tr>
+                <td className="p-4 font-semibold text-gray-900">覚えた／覚えてないを記録</td>
+                <td className="p-4 text-gray-600">
+                  クイズで学習した句動詞の定着度を記録し、マイページで進捗を確認できます。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   );
 }
