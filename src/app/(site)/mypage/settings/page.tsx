@@ -14,6 +14,9 @@ export default function AccountSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -44,6 +47,23 @@ export default function AccountSettingsPage() {
       setError(err instanceof ApiError ? err.message : 'ユーザー名の更新に失敗しました。');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (e: FormEvent) => {
+    e.preventDefault();
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await apiFetch('/api/auth/me', {
+        method: 'DELETE',
+        body: JSON.stringify({ password: deletePassword }),
+      });
+      // user が null になると本コンポーネントの認証ガードが/loginへ遷移させる
+      await refresh();
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : 'アカウントの削除に失敗しました。');
+      setDeleting(false);
     }
   };
 
@@ -84,6 +104,36 @@ export default function AccountSettingsPage() {
               className="mt-2 w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow hover:bg-indigo-700 transition disabled:opacity-50"
             >
               {submitting ? '保存中...' : '保存する'}
+            </button>
+          </form>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-red-200 shadow-sm p-6 mt-6">
+          <h2 className="text-sm font-bold text-red-600 mb-1">アカウントの削除</h2>
+          <p className="text-xs text-gray-500 mb-4">
+            アカウントを削除すると、学習の記録を含むすべてのデータが完全に削除されます。この操作は取り消せません。
+          </p>
+
+          <form onSubmit={handleDelete} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1 text-sm text-gray-700">
+              パスワード（本人確認のため入力してください）
+              <input
+                type="password"
+                required
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </label>
+
+            {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
+
+            <button
+              type="submit"
+              disabled={deleting}
+              className="w-full py-3 bg-white border-2 border-red-400 text-red-600 font-semibold rounded-xl hover:bg-red-50 transition disabled:opacity-50"
+            >
+              {deleting ? '削除中...' : 'アカウントを削除する'}
             </button>
           </form>
         </div>
