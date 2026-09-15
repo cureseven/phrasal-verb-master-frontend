@@ -9,6 +9,7 @@ type RelatedType = 'verb' | 'particle';
 export default function HomePage() {
   const [card, setCard] = useState<PhrasalVerb | null>(null);
   const [showMeaning, setShowMeaning] = useState(false);
+  const [alwaysShow, setAlwaysShow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +41,9 @@ export default function HomePage() {
       if (candidates.length === 0) return;
       const next = candidates[Math.floor(Math.random() * candidates.length)];
       setCard(next);
-      setShowMeaning(false);
+      if (!alwaysShow) {
+        setShowMeaning(false);
+      }
     } catch {
       setError('句動詞の切り替えに失敗しました。');
     }
@@ -88,10 +91,12 @@ export default function HomePage() {
         </div>
 
         <div
-          onClick={() => setShowMeaning(!showMeaning)}
-          className="w-full bg-white rounded-2xl p-6 shadow-sm border border-gray-200 min-h-[120px] flex flex-col justify-center items-center text-center cursor-pointer hover:bg-gray-50 transition"
+          onClick={() => !alwaysShow && setShowMeaning(!showMeaning)}
+          className={`w-full bg-white rounded-2xl p-6 shadow-sm border border-gray-200 min-h-[120px] flex flex-col justify-center items-center text-center transition ${
+            !alwaysShow ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'
+          }`}
         >
-          {showMeaning ? (
+          {showMeaning || alwaysShow ? (
             <div className="space-y-2">
               <p className="text-lg font-semibold text-gray-800">{card.meaningJa}</p>
               <p className="text-sm text-gray-500 italic">&quot;{card.exampleSentence}&quot;</p>
@@ -100,6 +105,21 @@ export default function HomePage() {
             <p className="text-sm text-gray-400">クリックして日本語訳を表示</p>
           )}
         </div>
+
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={alwaysShow}
+            onChange={(e) => {
+              setAlwaysShow(e.target.checked);
+              if (e.target.checked) {
+                setShowMeaning(true);
+              }
+            }}
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+          />
+          常に日本語訳を表示する
+        </label>
 
         <p className="text-xs text-gray-400">
           単語をクリックすると別の句動詞に切り替わります
