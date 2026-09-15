@@ -38,7 +38,7 @@ export function Header() {
         {loading ? null : user ? (
           <>
             <Link href="/mypage" className="text-gray-600 hover:underline">
-              {user.email}
+              {user.username || user.email}
             </Link>
             <button
               onClick={handleLogout}
