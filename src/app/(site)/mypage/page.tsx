@@ -49,7 +49,12 @@ export default function MyPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
       <div className="w-full max-w-md">
-        <h1 className="text-xl font-bold text-gray-900 mb-6">マイページ</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-bold text-gray-900">マイページ</h1>
+          <Link href="/mypage/settings" className="text-sm text-indigo-600 font-semibold hover:underline">
+            アカウント設定
+          </Link>
+        </div>
 
         {error && <p className="text-red-600">{error}</p>}
 

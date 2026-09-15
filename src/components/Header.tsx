@@ -38,9 +38,8 @@ export function Header() {
         {loading ? null : user ? (
           <>
             <Link href="/mypage" className="text-gray-600 hover:underline">
-              マイページ
+              {user.email}
             </Link>
-            <span className="text-gray-600">{user.email}</span>
             <button
               onClick={handleLogout}
               className="text-indigo-600 font-semibold hover:underline"
