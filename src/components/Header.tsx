@@ -23,14 +23,9 @@ export function Header() {
           Phrasal Verb Master
         </Link>
         {user && (
-          <>
-            <Link href="/list" className="text-sm text-gray-600 hover:underline">
-              一覧
-            </Link>
-            <Link href="/quiz" className="text-sm text-gray-600 hover:underline">
-              クイズ
-            </Link>
-          </>
+          <Link href="/list" className="text-sm text-gray-600 hover:underline">
+            一覧
+          </Link>
         )}
       </div>
 

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { FlashcardDemo } from '@/components/FlashcardDemo';
+import { Quiz } from '@/components/Quiz';
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
@@ -18,7 +19,7 @@ export default function HomePage() {
   if (user) {
     return (
       <main className="flex min-h-[80vh] flex-col items-center justify-center p-8 bg-gray-50">
-        <FlashcardDemo />
+        <Quiz />
       </main>
     );
   }
