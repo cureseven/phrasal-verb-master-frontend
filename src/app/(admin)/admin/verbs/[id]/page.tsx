@@ -7,13 +7,18 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
 import { PhrasalVerb } from '@/types/phrasalVerb';
 
+interface ExampleForm {
+  sentenceEn: string;
+  sentenceJa: string;
+}
+
 export default function AdminVerbDetailPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
   const [verb, setVerb] = useState<PhrasalVerb | null>(null);
   const [meaningJa, setMeaningJa] = useState('');
-  const [exampleSentence, setExampleSentence] = useState('');
+  const [examples, setExamples] = useState<ExampleForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -32,7 +37,7 @@ export default function AdminVerbDetailPage() {
         const data = await apiFetch<PhrasalVerb>(`/api/verbs/${id}`);
         setVerb(data);
         setMeaningJa(data.meaningJa);
-        setExampleSentence(data.exampleSentence);
+        setExamples(data.examples.map((ex) => ({ sentenceEn: ex.sentenceEn, sentenceJa: ex.sentenceJa })));
       } catch {
         setError('句動詞の取得に失敗しました。');
       } finally {
@@ -42,6 +47,12 @@ export default function AdminVerbDetailPage() {
     load();
   }, [admin, id]);
 
+  const updateExample = (index: number, field: keyof ExampleForm, value: string) => {
+    setExamples((prev) =>
+      prev.map((ex, i) => (i === index ? { ...ex, [field]: value } : ex))
+    );
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -49,7 +60,7 @@ export default function AdminVerbDetailPage() {
     try {
       await apiFetch(`/api/admin/verbs/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ meaningJa, exampleSentence }),
+        body: JSON.stringify({ meaningJa, examples }),
       });
       router.push('/verbs');
     } catch (err) {
@@ -127,16 +138,33 @@ export default function AdminVerbDetailPage() {
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-sm text-gray-700">
-            例文
-            <textarea
-              required
-              value={exampleSentence}
-              onChange={(e) => setExampleSentence(e.target.value)}
-              rows={3}
-              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-            />
-          </label>
+          <div className="flex flex-col gap-3">
+            {examples.map((ex, i) => (
+              <div key={i} className="flex flex-col gap-2 rounded-lg border border-gray-200 p-3">
+                <p className="text-xs font-semibold text-gray-500">例文 {i + 1}</p>
+                <label className="flex flex-col gap-1 text-sm text-gray-700">
+                  英文
+                  <input
+                    type="text"
+                    required
+                    value={ex.sentenceEn}
+                    onChange={(e) => updateExample(i, 'sentenceEn', e.target.value)}
+                    className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm text-gray-700">
+                  日本語訳
+                  <input
+                    type="text"
+                    required
+                    value={ex.sentenceJa}
+                    onChange={(e) => updateExample(i, 'sentenceJa', e.target.value)}
+                    className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 

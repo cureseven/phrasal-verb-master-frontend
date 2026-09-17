@@ -141,7 +141,11 @@ export default function ListPage() {
                     {v.verb} <span className="text-emerald-600">{v.particle}</span>
                   </p>
                   <p className="text-sm text-gray-700 mt-1">{v.meaningJa}</p>
-                  <p className="text-xs text-gray-400 italic mt-2">&quot;{v.exampleSentence}&quot;</p>
+                  {v.examples[0] && (
+                    <p className="text-xs text-gray-400 italic mt-2">
+                      &quot;{v.examples[0].sentenceEn}&quot;
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

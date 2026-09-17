@@ -8,7 +8,7 @@ interface CardData {
   verb: string;
   particle: string;
   meaningJa: string;
-  exampleSentence: string;
+  examples: { sentenceEn: string; sentenceJa: string }[];
 }
 
 export function Quiz() {
@@ -156,9 +156,16 @@ export function Quiz() {
         }`}
       >
         {isDisplayed ? (
-          <div className="space-y-2">
-            <p className="text-lg font-semibold text-gray-800">{card?.meaningJa}</p>
-            <p className="text-sm text-gray-500 italic">&quot;{card?.exampleSentence}&quot;</p>
+          <div className="space-y-3 w-full">
+            <p className="text-lg font-semibold text-gray-800 text-center">{card?.meaningJa}</p>
+            <ul className="space-y-2">
+              {card?.examples.map((ex, i) => (
+                <li key={i} className="text-left">
+                  <p className="text-sm text-gray-500 italic">&quot;{ex.sentenceEn}&quot;</p>
+                  <p className="text-xs text-gray-400">{ex.sentenceJa}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : (
           <p className="text-sm text-gray-400">クリックして日本語訳を表示</p>

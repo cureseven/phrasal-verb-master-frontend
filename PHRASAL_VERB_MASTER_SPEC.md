@@ -155,14 +155,18 @@ src/
 #### クイズ系 (Quiz)
 
 - `GET /api/quiz/next` — クエリ: `mode: "verb_fixed" | "particle_fixed"`, `word: string`（省略時は完全ランダム。SCR-01の初回カード取得にも流用している）
-  - レスポンス例:
+  - レスポンス例（2026-09-17〜: `exampleSentence`単一文字列から、`examples`（3件固定、英文+日本語訳）に変更。`PhrasalVerbExample`テーブルに正規化し、`order`で順序管理）:
     ```json
     {
       "id": "uuid-1",
       "verb": "take",
       "particle": "off",
       "meaningJa": "離陸する、脱ぐ",
-      "exampleSentence": "The plane took off."
+      "examples": [
+        { "sentenceEn": "The plane took off.", "sentenceJa": "飛行機は離陸した。" },
+        { "sentenceEn": "...", "sentenceJa": "..." },
+        { "sentenceEn": "...", "sentenceJa": "..." }
+      ]
     }
     ```
 
