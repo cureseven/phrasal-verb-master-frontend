@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { PhrasalVerb } from '@/types/phrasalVerb';
 import { useAuth } from '@/contexts/AuthContext';
+import { highlightPhrasalVerb } from '@/lib/highlightPhrasalVerb';
 
 type StatusFilter = '' | 'memorized' | 'review_needed';
 
@@ -143,7 +144,7 @@ export default function ListPage() {
                   <p className="text-sm text-gray-700 mt-1">{v.meaningJa}</p>
                   {v.examples[0] && (
                     <p className="text-xs text-gray-400 italic mt-2">
-                      &quot;{v.examples[0].sentenceEn}&quot;
+                      &quot;{highlightPhrasalVerb(v.examples[0].sentenceEn, v.verb, v.particle)}&quot;
                     </p>
                   )}
                 </div>

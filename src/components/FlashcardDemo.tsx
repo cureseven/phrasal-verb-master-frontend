@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { PhrasalVerb } from '@/types/phrasalVerb';
+import { highlightPhrasalVerb } from '@/lib/highlightPhrasalVerb';
 
 type RelatedType = 'verb' | 'particle';
 
@@ -101,7 +102,9 @@ export function FlashcardDemo() {
             <ul className="space-y-2">
               {card.examples.map((ex, i) => (
                 <li key={i} className="text-left">
-                  <p className="text-sm text-gray-500 italic">&quot;{ex.sentenceEn}&quot;</p>
+                  <p className="text-sm text-gray-500 italic">
+                    &quot;{highlightPhrasalVerb(ex.sentenceEn, card.verb, card.particle)}&quot;
+                  </p>
                   <p className="text-xs text-gray-400">{ex.sentenceJa}</p>
                 </li>
               ))}
