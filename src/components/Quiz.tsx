@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '@/lib/api';
+import { highlightPhrasalVerb } from '@/lib/highlightPhrasalVerb';
 
 interface CardData {
   id: string;
@@ -161,7 +162,9 @@ export function Quiz() {
             <ul className="space-y-2">
               {card?.examples.map((ex, i) => (
                 <li key={i} className="text-left">
-                  <p className="text-sm text-gray-500 italic">&quot;{ex.sentenceEn}&quot;</p>
+                  <p className="text-sm text-gray-500 italic">
+                    &quot;{highlightPhrasalVerb(ex.sentenceEn, card.verb, card.particle)}&quot;
+                  </p>
                   <p className="text-xs text-gray-400">{ex.sentenceJa}</p>
                 </li>
               ))}
