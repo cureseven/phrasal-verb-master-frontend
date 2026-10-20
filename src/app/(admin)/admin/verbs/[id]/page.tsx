@@ -5,20 +5,19 @@ import { useRouter, useParams } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
-import { PhrasalVerb } from '@/types/phrasalVerb';
-
-interface ExampleForm {
-  sentenceEn: string;
-  sentenceJa: string;
-}
+import {
+  AdminVerbTranslationFields,
+  emptyLocalizedText,
+} from '@/components/AdminVerbTranslationFields';
+import { AdminPhrasalVerb, AdminVerbExample, LocalizedText } from '@/types/admin';
 
 export default function AdminVerbDetailPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { admin, loading: authLoading } = useAdminAuth();
-  const [verb, setVerb] = useState<PhrasalVerb | null>(null);
-  const [meaningJa, setMeaningJa] = useState('');
-  const [examples, setExamples] = useState<ExampleForm[]>([]);
+  const [verb, setVerb] = useState<AdminPhrasalVerb | null>(null);
+  const [meanings, setMeanings] = useState<LocalizedText>(emptyLocalizedText);
+  const [examples, setExamples] = useState<AdminVerbExample[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -34,10 +33,10 @@ export default function AdminVerbDetailPage() {
     if (!admin) return;
     const load = async () => {
       try {
-        const data = await apiFetch<PhrasalVerb>(`/api/verbs/${id}`);
+        const data = await apiFetch<AdminPhrasalVerb>(`/api/admin/verbs/${id}`);
         setVerb(data);
-        setMeaningJa(data.meaningJa);
-        setExamples(data.examples.map((ex) => ({ sentenceEn: ex.sentenceEn, sentenceJa: ex.sentenceJa })));
+        setMeanings(data.meanings);
+        setExamples(data.examples);
       } catch {
         setError('句動詞の取得に失敗しました。');
       } finally {
@@ -47,12 +46,6 @@ export default function AdminVerbDetailPage() {
     load();
   }, [admin, id]);
 
-  const updateExample = (index: number, field: keyof ExampleForm, value: string) => {
-    setExamples((prev) =>
-      prev.map((ex, i) => (i === index ? { ...ex, [field]: value } : ex))
-    );
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -60,7 +53,7 @@ export default function AdminVerbDetailPage() {
     try {
       await apiFetch(`/api/admin/verbs/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ meaningJa, examples }),
+        body: JSON.stringify({ meanings, examples }),
       });
       router.push('/verbs');
     } catch (err) {
@@ -127,44 +120,12 @@ export default function AdminVerbDetailPage() {
             動詞・副詞/前置詞は句動詞の識別情報のため変更できません。変更したい場合は削除して登録し直してください。
           </p>
 
-          <label className="flex flex-col gap-1 text-sm text-gray-700">
-            意味（日本語）
-            <input
-              type="text"
-              required
-              value={meaningJa}
-              onChange={(e) => setMeaningJa(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-            />
-          </label>
-
-          <div className="flex flex-col gap-3">
-            {examples.map((ex, i) => (
-              <div key={i} className="flex flex-col gap-2 rounded-lg border border-gray-200 p-3">
-                <p className="text-xs font-semibold text-gray-500">例文 {i + 1}</p>
-                <label className="flex flex-col gap-1 text-sm text-gray-700">
-                  英文
-                  <input
-                    type="text"
-                    required
-                    value={ex.sentenceEn}
-                    onChange={(e) => updateExample(i, 'sentenceEn', e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-sm text-gray-700">
-                  日本語訳
-                  <input
-                    type="text"
-                    required
-                    value={ex.sentenceJa}
-                    onChange={(e) => updateExample(i, 'sentenceJa', e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-                  />
-                </label>
-              </div>
-            ))}
-          </div>
+          <AdminVerbTranslationFields
+            meanings={meanings}
+            onMeaningsChange={setMeanings}
+            examples={examples}
+            onExamplesChange={setExamples}
+          />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 

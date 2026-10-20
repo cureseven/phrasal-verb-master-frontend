@@ -148,6 +148,8 @@ src/
 
 #### 句動詞・マスターデータ系 (Phrasal Verbs - パブリックアクセス可)
 
+> 2026-10-19〜: 多言語対応（日本語・簡体字中国語）。意味・例文の訳は `phrasal_verb_translations` / `phrasal_verb_example_translations` テーブルに言語ごとに持つ。以下の句動詞系・クイズ系APIは `?lang=ja|zh`（省略時 `ja`）を受け取り、`meaning` と `examples[].translation` にその言語の文言を返す（未翻訳は日本語にフォールバック）。フロントは `/ja/...`・`/zh/...` のURLで言語を分け、言語なしのURLは `src/proxy.ts` がCookie（`NEXT_LOCALE`）→ブラウザの言語設定の順で振り分ける。一般向けAPIのエラーには `code`（`INVALID_CREDENTIALS` など）が付き、フロントが表示言語のメッセージに変換する。
+
 - `GET /api/verbs` — 句動詞一覧を取得。クエリ: `?verb=take&particle=off&status=review_needed`（`status`はログイン時のみ有効。未ログインなら無視されて全件）
 - `GET /api/verbs/:id` — 指定した句動詞の詳細を取得
 - `GET /api/verbs/related` — カード切り替え用API。クエリ: `?type=verb&value=take`
@@ -155,17 +157,17 @@ src/
 #### クイズ系 (Quiz)
 
 - `GET /api/quiz/next` — クエリ: `mode: "verb_fixed" | "particle_fixed"`, `word: string`（省略時は完全ランダム。SCR-01の初回カード取得にも流用している）
-  - レスポンス例（2026-09-17〜: `exampleSentence`単一文字列から、`examples`（3件固定、英文+日本語訳）に変更。`PhrasalVerbExample`テーブルに正規化し、`order`で順序管理）:
+  - レスポンス例（2026-09-17〜: `examples` は3件固定。2026-10-19〜: `?lang=zh` の例。`meaningJa` / `sentenceJa` は移行期間の互換用で、旧カラム削除時に廃止予定）:
     ```json
     {
       "id": "uuid-1",
       "verb": "take",
       "particle": "off",
-      "meaningJa": "離陸する、脱ぐ",
+      "meaning": "起飞，脱下",
       "examples": [
-        { "sentenceEn": "The plane took off.", "sentenceJa": "飛行機は離陸した。" },
-        { "sentenceEn": "...", "sentenceJa": "..." },
-        { "sentenceEn": "...", "sentenceJa": "..." }
+        { "sentenceEn": "The plane will take off soon.", "translation": "飞机马上就要起飞了。" },
+        { "sentenceEn": "...", "translation": "..." },
+        { "sentenceEn": "...", "translation": "..." }
       ]
     }
     ```

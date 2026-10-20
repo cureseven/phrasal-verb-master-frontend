@@ -77,7 +77,7 @@ export default function AdminVerbsPage() {
                 >
                   <td className="p-3 font-semibold text-indigo-600">{v.verb}</td>
                   <td className="p-3 font-semibold text-emerald-600">{v.particle}</td>
-                  <td className="p-3">{v.meaningJa}</td>
+                  <td className="p-3">{v.meaning}</td>
                   <td className="p-3 text-gray-500 italic">{v.examples[0]?.sentenceEn}</td>
                 </tr>
               ))}

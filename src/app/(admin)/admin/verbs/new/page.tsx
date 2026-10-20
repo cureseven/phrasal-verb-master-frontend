@@ -5,25 +5,22 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { AdminHeader } from '@/components/AdminHeader';
+import {
+  AdminVerbTranslationFields,
+  emptyExamples,
+  emptyLocalizedText,
+} from '@/components/AdminVerbTranslationFields';
+import { AdminVerbExample, LocalizedText } from '@/types/admin';
 
-interface ExampleForm {
-  sentenceEn: string;
-  sentenceJa: string;
-}
-
-const EMPTY_EXAMPLES: ExampleForm[] = [
-  { sentenceEn: '', sentenceJa: '' },
-  { sentenceEn: '', sentenceJa: '' },
-  { sentenceEn: '', sentenceJa: '' },
-];
+const EXAMPLE_COUNT = 3;
 
 export default function AdminNewVerbPage() {
   const router = useRouter();
   const { admin, loading: authLoading } = useAdminAuth();
   const [verb, setVerb] = useState('');
   const [particle, setParticle] = useState('');
-  const [meaningJa, setMeaningJa] = useState('');
-  const [examples, setExamples] = useState<ExampleForm[]>(EMPTY_EXAMPLES);
+  const [meanings, setMeanings] = useState<LocalizedText>(emptyLocalizedText);
+  const [examples, setExamples] = useState<AdminVerbExample[]>(() => emptyExamples(EXAMPLE_COUNT));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,12 +30,6 @@ export default function AdminNewVerbPage() {
     }
   }, [authLoading, admin, router]);
 
-  const updateExample = (index: number, field: keyof ExampleForm, value: string) => {
-    setExamples((prev) =>
-      prev.map((ex, i) => (i === index ? { ...ex, [field]: value } : ex))
-    );
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -46,7 +37,7 @@ export default function AdminNewVerbPage() {
     try {
       await apiFetch('/api/admin/verbs', {
         method: 'POST',
-        body: JSON.stringify({ verb, particle, meaningJa, examples }),
+        body: JSON.stringify({ verb, particle, meanings, examples }),
       });
       router.push('/verbs');
     } catch (err) {
@@ -93,44 +84,12 @@ export default function AdminNewVerbPage() {
             </label>
           </div>
 
-          <label className="flex flex-col gap-1 text-sm text-gray-700">
-            意味（日本語）
-            <input
-              type="text"
-              required
-              value={meaningJa}
-              onChange={(e) => setMeaningJa(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-            />
-          </label>
-
-          <div className="flex flex-col gap-3">
-            {examples.map((ex, i) => (
-              <div key={i} className="flex flex-col gap-2 rounded-lg border border-gray-200 p-3">
-                <p className="text-xs font-semibold text-gray-500">例文 {i + 1}</p>
-                <label className="flex flex-col gap-1 text-sm text-gray-700">
-                  英文
-                  <input
-                    type="text"
-                    required
-                    value={ex.sentenceEn}
-                    onChange={(e) => updateExample(i, 'sentenceEn', e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-sm text-gray-700">
-                  日本語訳
-                  <input
-                    type="text"
-                    required
-                    value={ex.sentenceJa}
-                    onChange={(e) => updateExample(i, 'sentenceJa', e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
-                  />
-                </label>
-              </div>
-            ))}
-          </div>
+          <AdminVerbTranslationFields
+            meanings={meanings}
+            onMeaningsChange={setMeanings}
+            examples={examples}
+            onExamplesChange={setExamples}
+          />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 

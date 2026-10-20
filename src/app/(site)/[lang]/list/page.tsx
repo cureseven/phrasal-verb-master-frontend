@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { PhrasalVerb } from '@/types/phrasalVerb';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/i18n/I18nContext';
 import { highlightPhrasalVerb } from '@/lib/highlightPhrasalVerb';
 
 type StatusFilter = '' | 'memorized' | 'review_needed';
 
 export default function ListPage() {
   const { user } = useAuth();
+  const { locale, t } = useI18n();
   const [allVerbs, setAllVerbs] = useState<PhrasalVerb[]>([]);
   const [statusFilteredVerbs, setStatusFilteredVerbs] = useState<PhrasalVerb[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,16 +33,16 @@ export default function ListPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await apiFetch<PhrasalVerb[]>('/api/verbs');
+        const data = await apiFetch<PhrasalVerb[]>(`/api/verbs?lang=${locale}`);
         setAllVerbs(data);
       } catch {
-        setError('句動詞一覧の取得に失敗しました。');
+        setError(t.list.fetchFailed);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, []);
+  }, [locale, t]);
 
   // 学習ステータスはユーザーごとのデータのためサーバー側で絞り込む
   useEffect(() => {
@@ -50,15 +52,15 @@ export default function ListPage() {
     const load = async () => {
       try {
         const data = await apiFetch<PhrasalVerb[]>(
-          `/api/verbs?status=${encodeURIComponent(selectedStatus)}`
+          `/api/verbs?status=${encodeURIComponent(selectedStatus)}&lang=${locale}`
         );
         setStatusFilteredVerbs(data);
       } catch {
-        setError('句動詞一覧の取得に失敗しました。');
+        setError(t.list.fetchFailed);
       }
     };
     load();
-  }, [selectedStatus, user]);
+  }, [selectedStatus, user, locale, t]);
 
   const verbOptions = useMemo(
     () => Array.from(new Set(allVerbs.map((v) => v.verb))).sort(),
@@ -84,7 +86,7 @@ export default function ListPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
       <div className="w-full max-w-4xl">
-        <h1 className="text-xl font-bold text-gray-900 mb-6">句動詞一覧</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-6">{t.list.title}</h1>
 
         <div className="flex gap-4 mb-6">
           <select
@@ -92,7 +94,7 @@ export default function ListPage() {
             onChange={(e) => setSelectedVerb(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 bg-white text-sm"
           >
-            <option value="">動詞: すべて</option>
+            <option value="">{t.list.verbAll}</option>
             {verbOptions.map((v) => (
               <option key={v} value={v}>
                 {v}
@@ -105,7 +107,7 @@ export default function ListPage() {
             onChange={(e) => setSelectedParticle(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 bg-white text-sm"
           >
-            <option value="">副詞/前置詞: すべて</option>
+            <option value="">{t.list.particleAll}</option>
             {particleOptions.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -119,19 +121,19 @@ export default function ListPage() {
               onChange={(e) => setSelectedStatus(e.target.value as StatusFilter)}
               className="rounded-lg border border-gray-300 px-3 py-2 bg-white text-sm"
             >
-              <option value="">学習状況: すべて</option>
-              <option value="memorized">覚えた</option>
-              <option value="review_needed">覚えてない</option>
+              <option value="">{t.list.statusAll}</option>
+              <option value="memorized">{t.common.memorized}</option>
+              <option value="review_needed">{t.common.reviewNeeded}</option>
             </select>
           )}
         </div>
 
-        {loading && <p className="text-gray-500">読み込み中...</p>}
+        {loading && <p className="text-gray-500">{t.common.loading}</p>}
         {error && <p className="text-red-600">{error}</p>}
 
         {!loading && !error && (
           <>
-            <p className="text-sm text-gray-500 mb-3">{filteredVerbs.length}件</p>
+            <p className="text-sm text-gray-500 mb-3">{t.common.count(filteredVerbs.length)}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {filteredVerbs.map((v) => (
                 <div
@@ -141,7 +143,7 @@ export default function ListPage() {
                   <p className="font-bold text-gray-900">
                     {v.verb} <span className="text-emerald-600">{v.particle}</span>
                   </p>
-                  <p className="text-sm text-gray-700 mt-1">{v.meaningJa}</p>
+                  <p className="text-sm text-gray-700 mt-1">{v.meaning}</p>
                   {v.examples[0] && (
                     <p className="text-xs text-gray-400 italic mt-2">
                       &quot;{highlightPhrasalVerb(v.examples[0].sentenceEn, v.verb, v.particle)}&quot;
