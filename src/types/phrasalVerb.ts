@@ -1,12 +1,13 @@
+// 一般向けAPIのレスポンス。meaning / translation は ?lang= で指定した言語のもの。
 export interface PhrasalVerbExample {
   sentenceEn: string;
-  sentenceJa: string;
+  translation: string;
 }
 
 export interface PhrasalVerb {
   id: string;
   verb: string;
   particle: string;
-  meaningJa: string;
+  meaning: string;
   examples: PhrasalVerbExample[];
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/i18n/I18nContext';
 
 interface ProgressSummary {
   totalCount: number;
@@ -14,15 +15,16 @@ interface ProgressSummary {
 
 export default function MyPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t, href } = useI18n();
   const router = useRouter();
   const [summary, setSummary] = useState<ProgressSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.push(href('/login'));
     }
-  }, [authLoading, user, router]);
+  }, [authLoading, user, router, href]);
 
   useEffect(() => {
     if (!user) return;
@@ -31,14 +33,14 @@ export default function MyPage() {
         const data = await apiFetch<ProgressSummary>('/api/progress/summary');
         setSummary(data);
       } catch {
-        setError('進捗の取得に失敗しました。');
+        setError(t.mypage.fetchFailed);
       }
     };
     load();
-  }, [user]);
+  }, [user, t]);
 
   if (authLoading || !user) {
-    return <div className="flex h-screen items-center justify-center text-gray-500">Loading...</div>;
+    return <div className="flex h-screen items-center justify-center text-gray-500">{t.common.loading}</div>;
   }
 
   const progressRate =
@@ -50,9 +52,9 @@ export default function MyPage() {
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-gray-900">マイページ</h1>
-          <Link href="/mypage/settings" className="text-sm text-indigo-600 font-semibold hover:underline">
-            アカウント設定
+          <h1 className="text-xl font-bold text-gray-900">{t.mypage.title}</h1>
+          <Link href={href('/mypage/settings')} className="text-sm text-indigo-600 font-semibold hover:underline">
+            {t.mypage.settingsLink}
           </Link>
         </div>
 
@@ -62,7 +64,7 @@ export default function MyPage() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col gap-4">
             <div>
               <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>学習進捗</span>
+                <span>{t.mypage.progress}</span>
                 <span>
                   {summary.memorizedCount} / {summary.totalCount}（{progressRate}%）
                 </span>
@@ -76,19 +78,19 @@ export default function MyPage() {
             </div>
 
             <div className="flex justify-between text-sm text-gray-700 pt-2 border-t border-gray-100">
-              <span>覚えた</span>
-              <span className="font-semibold text-emerald-600">{summary.memorizedCount}件</span>
+              <span>{t.common.memorized}</span>
+              <span className="font-semibold text-emerald-600">{t.common.count(summary.memorizedCount)}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-700">
-              <span>覚えてない</span>
-              <span className="font-semibold text-red-500">{summary.reviewNeededCount}件</span>
+              <span>{t.common.reviewNeeded}</span>
+              <span className="font-semibold text-red-500">{t.common.count(summary.reviewNeededCount)}</span>
             </div>
 
             <Link
-              href="/list?status=review_needed"
+              href={href('/list?status=review_needed')}
               className="mt-2 w-full py-3 text-center bg-indigo-600 text-white font-semibold rounded-xl shadow hover:bg-indigo-700 transition"
             >
-              覚えてない句動詞を確認する
+              {t.mypage.reviewLink}
             </Link>
           </div>
         )}

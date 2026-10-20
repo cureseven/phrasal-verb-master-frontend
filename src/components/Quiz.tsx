@@ -3,17 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { highlightPhrasalVerb } from '@/lib/highlightPhrasalVerb';
-
-interface CardData {
-  id: string;
-  verb: string;
-  particle: string;
-  meaningJa: string;
-  examples: { sentenceEn: string; sentenceJa: string }[];
-}
+import { PhrasalVerb } from '@/types/phrasalVerb';
+import { useI18n } from '@/i18n/I18nContext';
 
 export function Quiz() {
-  const [card, setCard] = useState<CardData | null>(null);
+  const { locale, t } = useI18n();
+  const [card, setCard] = useState<PhrasalVerb | null>(null);
   const [showMeaning, setShowMeaning] = useState<boolean>(false);
   const [alwaysShow, setAlwaysShow] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,11 +24,11 @@ export function Quiz() {
       setShowMeaning(false);
     }
     try {
-      let url = '/api/quiz/next';
+      let url = `/api/quiz/next?lang=${locale}`;
       if (mode && word) {
-        url += `?mode=${mode}&word=${encodeURIComponent(word)}`;
+        url += `&mode=${mode}&word=${encodeURIComponent(word)}`;
       }
-      const data = await apiFetch<CardData>(url);
+      const data = await apiFetch<PhrasalVerb>(url);
       setCard(data);
     } catch (err) {
       console.error('Failed to fetch card:', err);
@@ -117,7 +112,7 @@ export function Quiz() {
   if (loading && !card) {
     return (
       <div className="flex min-h-[300px] items-center justify-center text-gray-500">
-        読み込み中...
+        {t.common.loading}
       </div>
     );
   }
@@ -158,20 +153,20 @@ export function Quiz() {
       >
         {isDisplayed ? (
           <div className="space-y-3 w-full">
-            <p className="text-lg font-semibold text-gray-800 text-center">{card?.meaningJa}</p>
+            <p className="text-lg font-semibold text-gray-800 text-center">{card?.meaning}</p>
             <ul className="space-y-2">
               {card?.examples.map((ex, i) => (
                 <li key={i} className="text-left">
                   <p className="text-sm text-gray-500 italic">
                     &quot;{highlightPhrasalVerb(ex.sentenceEn, card.verb, card.particle)}&quot;
                   </p>
-                  <p className="text-xs text-gray-400">{ex.sentenceJa}</p>
+                  <p className="text-xs text-gray-400">{ex.translation}</p>
                 </li>
               ))}
             </ul>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">クリックして日本語訳を表示</p>
+          <p className="text-sm text-gray-400">{t.card.showTranslation}</p>
         )}
       </div>
 
@@ -183,7 +178,7 @@ export function Quiz() {
             onChange={(e) => handleAlwaysShowChange(e.target.checked)}
             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
           />
-          常に日本語訳を表示する
+          {t.card.alwaysShowTranslation}
         </label>
 
         <div className="flex gap-3 w-full">
@@ -192,14 +187,14 @@ export function Quiz() {
             disabled={marking}
             className="flex-1 py-3 bg-white border-2 border-red-400 text-red-600 font-semibold rounded-xl shadow-sm hover:bg-red-50 transition disabled:opacity-50"
           >
-            覚えてない
+            {t.common.reviewNeeded}
           </button>
           <button
             onClick={() => handleMark('memorized')}
             disabled={marking}
             className="flex-1 py-3 bg-white border-2 border-emerald-500 text-emerald-600 font-semibold rounded-xl shadow-sm hover:bg-emerald-50 transition disabled:opacity-50"
           >
-            覚えた
+            {t.common.memorized}
           </button>
         </div>
 
@@ -207,7 +202,7 @@ export function Quiz() {
           onClick={handleNext}
           className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-700 transition"
         >
-          次へ
+          {t.card.next}
         </button>
       </div>
     </div>

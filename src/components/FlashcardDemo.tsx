@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiFetch, ApiError } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import { PhrasalVerb } from '@/types/phrasalVerb';
 import { highlightPhrasalVerb } from '@/lib/highlightPhrasalVerb';
+import { useI18n } from '@/i18n/I18nContext';
 
 type RelatedType = 'verb' | 'particle';
 
 export function FlashcardDemo() {
+  const { locale, t, errorMessage } = useI18n();
   const [card, setCard] = useState<PhrasalVerb | null>(null);
   const [showMeaning, setShowMeaning] = useState(false);
   const [alwaysShow, setAlwaysShow] = useState(false);
@@ -17,16 +19,16 @@ export function FlashcardDemo() {
   useEffect(() => {
     const loadRandom = async () => {
       try {
-        const data = await apiFetch<PhrasalVerb>('/api/quiz/next');
+        const data = await apiFetch<PhrasalVerb>(`/api/quiz/next?lang=${locale}`);
         setCard(data);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : '句動詞の取得に失敗しました。');
+        setError(errorMessage(err, t.card.fetchFailed));
       } finally {
         setLoading(false);
       }
     };
     loadRandom();
-  }, []);
+  }, [locale, t, errorMessage]);
 
   const handleWordClick = async (clickedType: RelatedType) => {
     if (!card) return;
@@ -36,7 +38,7 @@ export function FlashcardDemo() {
 
     try {
       const related = await apiFetch<PhrasalVerb[]>(
-        `/api/verbs/related?type=${fixedType}&value=${encodeURIComponent(fixedValue)}`
+        `/api/verbs/related?type=${fixedType}&value=${encodeURIComponent(fixedValue)}&lang=${locale}`
       );
       const candidates = related.filter((v) => v.id !== card.id);
       if (candidates.length === 0) return;
@@ -46,14 +48,14 @@ export function FlashcardDemo() {
         setShowMeaning(false);
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : '句動詞の切り替えに失敗しました。');
+      setError(errorMessage(err, t.card.switchFailed));
     }
   };
 
   if (loading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center text-gray-500">
-        読み込み中...
+        {t.common.loading}
       </div>
     );
   }
@@ -61,7 +63,7 @@ export function FlashcardDemo() {
   if (error || !card) {
     return (
       <div className="flex min-h-[300px] items-center justify-center text-red-600">
-        {error || '句動詞が見つかりません。'}
+        {error || t.card.notFound}
       </div>
     );
   }
@@ -98,20 +100,20 @@ export function FlashcardDemo() {
       >
         {showMeaning || alwaysShow ? (
           <div className="space-y-3 w-full">
-            <p className="text-lg font-semibold text-gray-800 text-center">{card.meaningJa}</p>
+            <p className="text-lg font-semibold text-gray-800 text-center">{card.meaning}</p>
             <ul className="space-y-2">
               {card.examples.map((ex, i) => (
                 <li key={i} className="text-left">
                   <p className="text-sm text-gray-500 italic">
                     &quot;{highlightPhrasalVerb(ex.sentenceEn, card.verb, card.particle)}&quot;
                   </p>
-                  <p className="text-xs text-gray-400">{ex.sentenceJa}</p>
+                  <p className="text-xs text-gray-400">{ex.translation}</p>
                 </li>
               ))}
             </ul>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">クリックして日本語訳を表示</p>
+          <p className="text-sm text-gray-400">{t.card.showTranslation}</p>
         )}
       </div>
 
@@ -127,10 +129,10 @@ export function FlashcardDemo() {
           }}
           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
         />
-        常に日本語訳を表示する
+        {t.card.alwaysShowTranslation}
       </label>
 
-      <p className="text-xs text-gray-400">単語をクリックすると別の句動詞に切り替わります</p>
+      <p className="text-xs text-gray-400">{t.card.switchHint}</p>
     </div>
   );
 }
