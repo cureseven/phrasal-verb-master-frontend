@@ -1,4 +1,5 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+// 空文字なら同じドメインの /api を使う。別のサーバー（切り替え前のRenderなど）を使うときだけURLを設定する。
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
 export class ApiError extends Error {
   constructor(

@@ -82,12 +82,22 @@ src/
 
 ```
 src/
-├── app/             # ページ（Next.js App Router）
+├── app/             # ページ（Next.js App Router）と、API（app/api/**/route.ts。2026-11-07〜）
 ├── components/      # 共通UIコンポーネント（Header等）
 ├── contexts/        # AuthContext（ログイン状態のグローバル管理）
+├── i18n/            # 言語設定・文言辞書（ja / zh）
 ├── lib/             # apiFetch等の共通ユーティリティ
+├── server/          # API用のサーバー側コード（2026-11-07〜）
+│   ├── lib/         #   Prismaクライアント、エラーコード
+│   ├── services/    #   ビジネスロジック・Prisma呼び出し（backendのservicesをそのまま移したもの）
+│   ├── auth.ts      #   認証・認可（requireUser / getUserId / requireAdmin / checkWritable）
+│   ├── http.ts      #   レスポンス・Cookie・例外処理の共通部品
+│   └── validation.ts#   入力チェック
 └── types/           # 型定義
+prisma/              # スキーマ、マイグレーション、seed・バックフィルスクリプト
 ```
+
+> **バックエンドのNext.jsへの統合（2026-11-07〜、切り替え作業中）:** 速さの問題（Render無料プランの休止と、Render〜Supabase間の距離）を解消するため、ExpressのAPIをNext.jsのRoute Handlers（`src/app/api`）に移した。パス・ステータス・JSONはExpress版と同一（違いは `/dbhealth` → `/api/dbhealth`、Cookieの `SameSite` が `None` → `Lax`）。**切り替えは `NEXT_PUBLIC_API_BASE_URL` の削除で行う**（設定されている間は従来のRenderのAPIを使い、削除すると同じドメインの `/api` を使う）。切り替えが落ち着いたらRenderを停止・削除し、backendリポジトリはアーカイブする。以降の「Backend」の記述は、切り替え完了までの旧構成。
 
 ### 2.3 インフラストラクチャ・デプロイ構成
 
@@ -107,9 +117,11 @@ src/
 
 **必須環境変数（Vercel / frontend）:**
 
-| 変数名 | 用途 |
-| --- | --- |
-| `NEXT_PUBLIC_API_BASE_URL` | バックエンドのURL（`https://phrasal-verb-master-backend.onrender.com`） |
+| 変数名 | 用途 | 備考 |
+| --- | --- | --- |
+| `DATABASE_URL` | Supabase接続（Transaction pooler、ポート6543） | 統合後のAPIが使用。Production環境のみ設定。スクリプトやマイグレーションは、手元でSession pooler（5432）のURLを `DATABASE_URL=...` と付けて実行する |
+| `JWT_SECRET` | JWT署名鍵 | 統合後のAPIが使用。Renderの値と同じにする |
+| `NEXT_PUBLIC_API_BASE_URL` | 従来のバックエンドのURL（`https://phrasal-verb-master-backend.onrender.com`） | **切り替え時に削除する。** 空なら同じドメインの `/api` を使う |
 
 ### 2.4 データベース設計（DB Schema）
 
