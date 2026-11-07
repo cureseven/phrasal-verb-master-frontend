@@ -23,6 +23,11 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
+/** クエリパラメータ等から言語を決める。未指定・未対応の値は既定の言語にする。 */
+export function parseLocale(value: unknown): Locale {
+  return isLocale(value) ? value : DEFAULT_LOCALE;
+}
+
 /** Accept-Language ヘッダーから対応言語を選ぶ。どれにも当てはまらなければ既定の言語にする。 */
 export function matchLocale(acceptLanguage: string | null): Locale {
   if (!acceptLanguage) {

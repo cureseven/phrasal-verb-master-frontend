@@ -1,0 +1,119 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  importFileExtension = ""
+}
+
+model PhrasalVerb {
+  id         String   @id @default(uuid())
+  verb       String
+  particle   String
+  meaningJa  String   @map("meaning_ja")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  userPhraseStatuses UserPhraseStatus[]
+  examples           PhrasalVerbExample[]
+  translations       PhrasalVerbTranslation[]
+
+  @@map("phrasal_verbs")
+}
+
+// 句動詞の意味を言語ごとに持つ。localeは src/lib/locale.ts の SUPPORTED_LOCALES のいずれか
+// （言語を増やしてもマイグレーション不要にするためenumにはしない）。
+model PhrasalVerbTranslation {
+  id            String   @id @default(uuid())
+  phrasalVerbId String   @map("phrasal_verb_id")
+  locale        String
+  meaning       String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  phrasalVerb PhrasalVerb @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+
+  @@unique([phrasalVerbId, locale])
+  @@map("phrasal_verb_translations")
+}
+
+model PhrasalVerbExample {
+  id            String   @id @default(uuid())
+  phrasalVerbId String   @map("phrasal_verb_id")
+  sentenceEn    String   @map("sentence_en")
+  sentenceJa    String   @map("sentence_ja")
+  order         Int
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  phrasalVerb  PhrasalVerb                     @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+  translations PhrasalVerbExampleTranslation[]
+
+  @@unique([phrasalVerbId, order])
+  @@map("phrasal_verb_examples")
+}
+
+// 例文の訳を言語ごとに持つ。
+model PhrasalVerbExampleTranslation {
+  id        String   @id @default(uuid())
+  exampleId String   @map("example_id")
+  locale    String
+  sentence  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  example PhrasalVerbExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+
+  @@unique([exampleId, locale])
+  @@map("phrasal_verb_example_translations")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  username     String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  userPhraseStatuses UserPhraseStatus[]
+  accountStatus      UserAccountStatus?
+
+  @@map("users")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+model UserAccountStatus {
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  isReadOnly Boolean  @default(false) @map("is_read_only")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_account_statuses")
+}
+
+enum LearningStatus {
+  MEMORIZED     @map("memorized")
+  REVIEW_NEEDED @map("review_needed")
+}
+
+model UserPhraseStatus {
+  id            String         @id @default(uuid())
+  userId        String         @map("user_id")
+  phrasalVerbId String         @map("phrasal_verb_id")
+  status        LearningStatus
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phrasalVerb PhrasalVerb @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, phrasalVerbId])
+  @@map("user_phrasal_verb_statuses")
+}
